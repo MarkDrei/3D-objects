@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#1b2340" />
+    <title>Polyhafen – 3D-Stadt</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎡</text></svg>" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <div id="loader">
+      <div class="logo">Polyhafen</div>
+      <div class="sub">Die Stadt wird gebaut …</div>
+      <div class="bar"><i id="loader-bar"></i></div>
+    </div>
+
+    <header id="top">
+      <div class="brand"><b>Polyhafen</b><span>3D-Objektwelt</span></div>
+      <div class="btns">
+        <button id="btn-catalog" title="Katalog">📚</button>
+        <button id="btn-night" title="Tag / Nacht">🌙</button>
+        <button id="btn-home" title="Startansicht">🧭</button>
+      </div>
+    </header>
+
+    <div id="hint">👆 Tippe auf ein Objekt · 1 Finger drehen · 2 Finger zoomen &amp; schieben</div>
+    <div id="label"></div>
+    <div id="toast"></div>
+
+    <section id="card" aria-live="polite">
+      <div class="row">
+        <div id="card-icon">🚗</div>
+        <div class="main">
+          <span id="card-cat">Fahrzeug</span>
+          <h2><span id="card-type">Auto</span> <small id="card-variant"></small></h2>
+          <button id="card-id" title="ID kopieren">car_001</button>
+        </div>
+        <button id="card-close" aria-label="Schließen">✕</button>
+      </div>
+      <div class="meta"><span id="card-source"></span><span id="card-stats"></span></div>
+      <div class="actions">
+        <button id="card-focus">🔍 Fokus</button>
+        <button id="card-follow">🎥 Folgen</button>
+      </div>
+    </section>
+
+    <section id="catalog">
+      <div class="head">
+        <div><h2>Objekt-Katalog</h2><span id="catalog-total"></span></div>
+        <button id="catalog-close" aria-label="Schließen">✕</button>
+      </div>
+      <div id="catalog-list"></div>
+    </section>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
