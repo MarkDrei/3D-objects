@@ -43,7 +43,8 @@ export class Stage {
 
   constructor(container: HTMLElement, private opts: StageOptions) {
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
-    this.pixelRatio = Math.min(window.devicePixelRatio, 2);
+    // phones: cap at 1.5 (big win on high-dpi screens, barely visible)
+    this.pixelRatio = Math.min(window.devicePixelRatio, matchMedia('(pointer: coarse)').matches ? 1.5 : 2);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;

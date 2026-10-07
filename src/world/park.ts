@@ -8,7 +8,8 @@ import {
 } from '../objects/park';
 import { place, FACE } from './districts';
 import { tree, nature } from './gltf';
-import { followCurve, loop } from './movers';
+import { followCurve, loop, roundedRect, circle } from './movers';
+import { createPerson, createDog } from '../objects/city';
 import { PARK } from './grounds';
 
 /** Lawn top inside the park. */
@@ -85,6 +86,37 @@ export function buildPark(scene: THREE.Scene) {
     [20, 3.3, FACE.n], [-21, 3.3, FACE.n], [22, -3.3, FACE.s], [-19, -3.3, FACE.s],
   ];
   for (const [x, z, rot] of benches) at(createBench(), x, z, rot, 1.3);
+  // people: some sit on benches, joggers on the outer loop, strollers around the fountain, kids
+  benches.forEach(([x, z, rot], k) => {
+    if (k % 3 === 2) return;
+    const p = createPerson(500 + k, { pose: 'sit' });
+    place(scene, p, x + Math.sin(rot) * 0.05 + Math.cos(rot) * (k % 2 ? 0.45 : -0.45), z + Math.cos(rot) * 0.05 - Math.sin(rot) * (k % 2 ? 0.45 : -0.45), rot, LAWN_Y);
+  });
+  const jog = roundedRect(0, 0, PARK.loop, PARK.loop, 2.5, LAWN_Y);
+  for (let k = 0; k < 5; k++) {
+    const p = createPerson(520 + k, { variant: 'Jogger' });
+    p.userData.walkSpeed = 1.8;
+    scene.add(p);
+    followCurve(p, jog, 2.6 + k * 0.2, { offset: k / 5, reverse: k % 2 === 1 });
+  }
+  const stroll = circle(0, 0, PARK.ring, LAWN_Y, 40);
+  for (let k = 0; k < 5; k++) {
+    const p = createPerson(540 + k);
+    p.userData.walkSpeed = 0.8;
+    scene.add(p);
+    followCurve(p, stroll, 0.9 + k * 0.08, { offset: k / 5 + 0.03, reverse: k % 2 === 0 });
+  }
+  for (let k = 0; k < 3; k++) {
+    const kid = createPerson(560 + k, { variant: 'Kind' });
+    kid.scale.setScalar(0.6);
+    kid.userData.walkSpeed = 1.6;
+    scene.add(kid);
+    followCurve(kid, circle(15, 15, 3 + k, LAWN_Y, 16), 1.8, { offset: k / 3, reverse: k === 1 });
+  }
+  const dog = createDog(9);
+  dog.userData.walkSpeed = 1.5;
+  scene.add(dog);
+  followCurve(dog, jog, 2.9, { offset: 0.02 });
   at(createTopiary('elephant'), -36.8, 36.8, Math.PI * 0.75, 2.5);
   at(createTopiary('giraffe'), 36.8, -36.8, -Math.PI * 0.25, 2.5);
   at(createTopiary('rabbit'), -36.8, -36.8, Math.PI * 0.25, 2.5);

@@ -50,7 +50,8 @@ export class Environment {
     this.sun = new THREE.DirectionalLight(DAY.sun, 2.6);
     this.sun.position.set(-140, 220, 110);
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
+    const s = matchMedia('(pointer: coarse)').matches ? 1536 : 2048;
+    this.sun.shadow.mapSize.set(s, s);
     const sc = this.sun.shadow.camera;
     sc.left = -190; sc.right = 190; sc.top = 190; sc.bottom = -190; sc.near = 50; sc.far = 600;
     this.sun.shadow.bias = -0.0006;
