@@ -15,6 +15,8 @@ export function setupDistanceCulling(camera: THREE.Camera) {
     if (box.isEmpty()) continue;
     box.getBoundingSphere(sphere);
     const r = sphere.radius;
+    // tiny objects: their shadows are a few pixels – skip them in the shadow pass
+    if (r < 1.3) o.traverse((m) => ((m as THREE.Mesh).isMesh && ((m as THREE.Mesh).castShadow = false)));
     const d = r < 1.5 ? 110 : r < 3 ? 170 : r < 6 ? 260 : 0;
     if (d) items.push({ o, d2: d * d });
   }

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { nightUniform } from './windows';
 
 /**
  * Shared materials. Procedural objects use vertex colors so that a whole object
@@ -28,4 +29,5 @@ export const MATERIALS: Record<MatKey, THREE.Material> = { std, metal, glass, la
 export function setNightFactor(n: number) {
   lamp.emissiveIntensity = n * 1.6;
   lamp.color.setScalar(1 - n * 0.3);
+  nightUniform.value = n;
 }

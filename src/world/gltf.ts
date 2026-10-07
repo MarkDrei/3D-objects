@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { model, fitModel } from '../core/assets';
 import { selectable, type Category } from '../core/registry';
 import { gallery } from '../objects/gallery';
+import { withWindows } from '../core/windows';
 
 /** Wrapper factories for the Kenney GLTF models (CC0). */
 
@@ -38,7 +39,7 @@ function roofMaterial(src: THREE.Material, v: number): THREE.Material {
   if (m) return m;
   m = src.clone();
   const { hue, sat } = ROOFS[v];
-  m.onBeforeCompile = (sh) => {
+  withWindows(m, (sh) => {
     sh.uniforms.uHue = { value: hue };
     sh.uniforms.uSat = { value: sat };
     sh.fragmentShader = sh.fragmentShader
@@ -48,8 +49,7 @@ vec3 hueRot(vec3 c, float a){ const vec3 k = vec3(0.57735); float ca = cos(a); r
       .replace('#include <map_fragment>', `#include <map_fragment>
 { vec3 c = diffuseColor.rgb; float mx = max(c.r, max(c.g, c.b)); float mn = min(c.r, min(c.g, c.b));
   if (c.g >= mx - 0.001 && (mx - mn) > 0.12) { vec3 r = hueRot(c, uHue); float l = dot(r, vec3(0.333)); diffuseColor.rgb = max(mix(vec3(l), r, uSat), 0.0); } }`);
-  };
-  m.customProgramCacheKey = () => `roof${v}`;
+  }, `roof${v}`);
   roofCache.set(k, m);
   return m;
 }

@@ -76,7 +76,7 @@ export class Stage {
     const rt = new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: 4 });
     this.composer = new EffectComposer(this.renderer, rt);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), 0.9, 0.5, 0.82);
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), 0.6, 0.4, 0.9);
     this.bloom.enabled = false;
     this.composer.addPass(this.bloom);
     this.outline = new OutlinePass(new THREE.Vector2(size.x, size.y), this.scene, this.camera);
@@ -217,7 +217,7 @@ export class Stage {
     if (this.camera.position.y < 1.5) this.camera.position.y = 1.5;
 
     this.bloom.enabled = env.night > 0.15;
-    this.bloom.strength = 0.9 * env.night;
+    this.bloom.strength = 0.65 * env.night;
     // shadows only every 2nd frame: halves the shadow draw calls, moving shadows still look smooth
     if ((this.frameNo++ & 1) === 0) this.renderer.shadowMap.needsUpdate = true;
     this.composer.render(dt);

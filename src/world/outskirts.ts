@@ -11,7 +11,8 @@ import {
 import { createBarn, createWindmill, createScarecrow, createHayBale, createCow, createPig, createChicken, createSheep, createPerson } from '../objects/city';
 import { createHedgeMaze } from '../objects/park';
 import { place, FACE } from './districts';
-import { nature } from './gltf';
+import { nature, house, tree } from './gltf';
+import { Parts } from '../core/parts';
 import { followCurve, loop, circle, roundedRect, drift } from './movers';
 import { HALF, SEA_Z } from './layout';
 
@@ -32,15 +33,31 @@ export function buildOutskirts(scene: THREE.Scene, helipadTop: THREE.Vector3 | n
 // ── farm (west) ───────────────────────────────────────────────────────────
 function farm(scene: THREE.Scene, moving: Set<string>) {
   const r = rng(404);
+  const px = -232, pz = 75, pw = 46, pd = 34;
   place(scene, createBarn(), -205, 12, FACE.e);
   place(scene, createWindmill(), -150, 28, FACE.e + 0.4);
   for (const [x, z, ry] of [[-188, 26, 0.3], [-190, 30, 1.2], [-186, 31, 2], [-222, -6, 0.5], [-226, -3, 1.4]]) place(scene, createHayBale(), x, z, ry);
   place(scene, createScarecrow(), -165, -75, FACE.e);
   place(scene, createScarecrow(), -230, -72, FACE.e + 0.5);
   place(scene, createHedgeMaze(), -150, -140, FACE.s);
+  place(scene, house(4, 9, 1), -190, -24, FACE.e);
+  // dirt road from the city ring to the barn yard
+  const road = new Parts();
+  const x0 = -(HALF + 4), x1 = -192;
+  road.box(x0 - x1, 0.06, 6, '#b89566', { x: (x0 + x1) / 2, y: 0.03, z: 12 });
+  road.box(26, 0.06, 26, '#bf9d6e', { x: -196, y: 0.03, z: 18 });
+  const rg = road.build({ castShadow: false });
+  scene.add(selectable(rg, { type: 'Feldweg', key: 'dirt_road', category: 'Gelände', source: 'prozedural', model: 'farm' }));
+  for (let k = 0; k < 16; k++) {
+    const a = r() * Math.PI * 2, d = 34 + r() * 26;
+    const x = -205 + Math.cos(a) * d, z = 15 + Math.sin(a) * d * 0.7;
+    if (Math.abs(z - 12) < 6 && x > -230) continue;
+    if (x > px - pw / 2 - 3 && x < px + pw / 2 + 3 && z > pz - pd / 2 - 3 && z < pz + pd / 2 + 3) continue;
+    if (Math.hypot(x + 262, z - 10) < 10) continue;
+    place(scene, tree(pick(r, ['tree_oak', 'tree_default', 'tree_fat', 'tree_default_fall']), 8 + r() * 4), x, z, r() * 6);
+  }
 
   // pasture with fence, cows and sheep
-  const px = -232, pz = 75, pw = 46, pd = 34;
   for (let x = px - pw / 2; x < px + pw / 2 - 1; x += 4.6) {
     place(scene, nature('fence_simple', 1.15), x + 2.3, pz - pd / 2, 0);
     place(scene, nature('fence_simple', 1.15), x + 2.3, pz + pd / 2, 0);

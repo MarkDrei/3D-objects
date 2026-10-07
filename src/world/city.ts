@@ -19,6 +19,7 @@ import { commercial } from './gltf';
 import { N, ROAD, blockPos, roadPos, PARK_HALF, SIDEWALK, hasLights } from './layout';
 import { lightState } from './traffic';
 import { followCurve, roundedRect } from './movers';
+import { buildLightPools } from './lightpools';
 
 const H = ROAD / 2;
 const SIDES: Side[] = ['n', 's', 'e', 'w'];
@@ -33,6 +34,12 @@ function topOf(o: THREE.Object3D) {
 
 export function buildCity(scene: THREE.Scene) {
   const movingKeys = new Set<string>();
+  const pools: THREE.Vector3[] = [];
+  /** street lamp + remember where its light falls */
+  const lamp = (x: number, z: number, rot: number) => {
+    place(scene, createStreetLamp(), x, z, rot, 0.25);
+    pools.push(new THREE.Vector3(x + Math.sin(rot) * 1.5, 0.3, z + Math.cos(rot) * 1.5));
+  };
 
   // ── north row: downtown ─────────────────────────────────────────────────
   const nw = downtownTowers(scene, 0, 0, [2, 4, 0, 3]);
@@ -115,7 +122,7 @@ export function buildCity(scene: THREE.Scene) {
     if (isPark(bx, bz)) continue;
     const cx = blockPos(bx), cz = blockPos(bz);
     for (const side of SIDES) {
-      for (const along of [-0.62, 0.62]) place(scene, createStreetLamp(), ...sidePoint(cx, cz, side, along, -SIDEWALK + 0.6), FACE[side], 0.25);
+      for (const along of [-0.62, 0.62]) lamp(...sidePoint(cx, cz, side, along, -SIDEWALK + 0.6), FACE[side]);
       const extra = r();
       const [x, z] = sidePoint(cx, cz, side, (r() - 0.5) * 0.5, -SIDEWALK + 0.9);
       const f = extra < 0.25 ? createTrashCan() : extra < 0.45 ? createHydrant() : extra < 0.6 ? createMailbox() : extra < 0.7 ? createPhoneBooth() : extra < 0.82 ? createBikeRack() : null;
@@ -127,7 +134,7 @@ export function buildCity(scene: THREE.Scene) {
   for (const side of SIDES) for (const a of [-0.75, -0.25, 0.25, 0.75]) {
     const t = a * (PARK_HALF - 4);
     const [x, z, rot] = side === 's' ? [t, PI, 0] : side === 'n' ? [t, -PI, Math.PI] : side === 'e' ? [PI, t, Math.PI / 2] : [-PI, t, -Math.PI / 2];
-    place(scene, createStreetLamp(), x, z, rot, 0.25);
+    lamp(x, z, rot);
   }
   place(scene, createBusStop(), 12, PARK_HALF - 1.5, 0, 0.25);
   place(scene, createBusStop(), -PARK_HALF + 1.5, -12, -Math.PI / 2, 0.25);
@@ -174,6 +181,7 @@ export function buildCity(scene: THREE.Scene) {
     }
   }
   movingKeys.add('person');
+  buildLightPools(scene, pools);
   const helipadTop = new THREE.Vector3(pad.position.x, topOf(pad), pad.position.z);
   return { movingKeys, helipadTop };
 }

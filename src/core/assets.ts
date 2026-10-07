@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { withWindows } from './windows';
 
 /**
  * GLTF models (Kenney, CC0). All models are preloaded once, then cloned
@@ -47,6 +48,10 @@ export async function preloadModels(paths: string[], onProgress?: (done: number,
             }
             for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
               const sm = mat as THREE.MeshStandardMaterial;
+              if ((p.startsWith('city/') || p.startsWith('suburb/building')) && !sm.userData.win) {
+                sm.userData.win = true;
+                withWindows(sm);
+              }
               if (sm.map) sm.map.anisotropy = 4;
               if ('metalness' in sm) sm.metalness = Math.min(sm.metalness, 0.2);
             }
