@@ -8,7 +8,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { Highlighter } from './highlight';
 import { Environment } from './environment';
 import { env, runTickers } from './anim';
-import { findSelectable } from './registry';
+import { findSelectable, visibleBox } from './registry';
 
 export interface StageOptions {
   bounds: number;
@@ -150,7 +150,7 @@ export class Stage {
 
   /** Smoothly fly the camera to frame an object. */
   focus(obj: THREE.Object3D) {
-    const box = new THREE.Box3().setFromObject(obj);
+    const box = visibleBox(obj);
     const sphere = box.getBoundingSphere(new THREE.Sphere());
     const dir = this.camera.position.clone().sub(this.controls.target).normalize();
     if (dir.y < 0.25) { dir.y = 0.35; dir.normalize(); }
@@ -189,6 +189,19 @@ export class Stage {
     this.env.update(dt);
     this.highlighter.update(t);
 
+    // following: shift everything (camera, target and a running fly animation) by the object's motion
+    if (this.following) {
+      const p = this.following.getWorldPosition(new THREE.Vector3());
+      const d = p.clone().sub(this.lastFollowPos);
+      this.lastFollowPos.copy(p);
+      if (this.fly) {
+        this.fly.fromPos.add(d); this.fly.toPos.add(d);
+        this.fly.fromT.add(d); this.fly.toT.add(d);
+      } else {
+        this.camera.position.add(d);
+        this.controls.target.add(d);
+      }
+    }
     if (this.fly) {
       const f = this.fly;
       f.t += dt / f.dur;
@@ -196,13 +209,6 @@ export class Stage {
       this.camera.position.lerpVectors(f.fromPos, f.toPos, k);
       this.controls.target.lerpVectors(f.fromT, f.toT, k);
       if (f.t >= 1) this.fly = null;
-      if (this.following) this.following.getWorldPosition(this.lastFollowPos);
-    } else if (this.following) {
-      const p = this.following.getWorldPosition(new THREE.Vector3());
-      const d = p.clone().sub(this.lastFollowPos);
-      this.camera.position.add(d);
-      this.controls.target.add(d);
-      this.lastFollowPos.copy(p);
     }
     // keep the camera inside the world
     const b = this.opts.bounds;

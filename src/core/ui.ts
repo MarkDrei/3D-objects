@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { infoOf, registry, type Category } from './registry';
+import { infoOf, registry, visibleBox, type Category } from './registry';
 import type { Stage } from './stage';
 
 export const CATEGORY_STYLE: Record<Category, { color: string; icon: string }> = {
@@ -95,7 +95,7 @@ export class UI {
     const sel = this.stage.highlighter.selected;
     if (!sel) return;
     const box = (sel.userData._box ??= new THREE.Box3()) as THREE.Box3;
-    box.setFromObject(sel);
+    visibleBox(sel, box);
     this.v.set((box.min.x + box.max.x) / 2, box.max.y, (box.min.z + box.max.z) / 2);
     this.v.project(this.stage.camera);
     const vis = this.v.z < 1 && Math.abs(this.v.x) < 1.2 && Math.abs(this.v.y) < 1.2;

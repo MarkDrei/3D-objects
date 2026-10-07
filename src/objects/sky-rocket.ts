@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Parts } from '../core/parts';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { onTick, env } from '../core/anim';
 import { selectable } from '../core/registry';
 import { homeOf } from './sky-util';
@@ -239,19 +240,19 @@ export function createJellyfish(hue = 0.85): THREE.Object3D {
   for (let k = 0; k < 4; k++) ib.torus(0.7, 0.12, col.clone().offsetHSL(0.08, 0, 0.1), { x: Math.cos(k * 1.57) * 1.2, y: 0.4, z: Math.sin(k * 1.57) * 1.2, rx: Math.PI / 2, mat: 'neon' });
   const inner = ib.build({ castShadow: false });
   root.add(inner);
-  const tentacles: THREE.Mesh[] = [];
-  const tMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.6, toneMapped: false });
+  // all tentacles merged into one mesh; vertices are swayed in onTick
+  const tGeos: THREE.BufferGeometry[] = [];
   for (let k = 0; k < 10; k++) {
     const a = (k / 10) * Math.PI * 2;
     const len = 5 + (k % 3) * 1.5;
     const g = new THREE.CylinderGeometry(0.12, 0.03, len, 4, 6);
-    g.translate(0, -len / 2, 0);
-    const m = new THREE.Mesh(g, tMat);
-    m.position.set(Math.cos(a) * 2.6, 0.1, Math.sin(a) * 2.6);
-    m.userData.base = Float32Array.from(g.attributes.position.array as Float32Array);
-    root.add(m);
-    tentacles.push(m);
+    g.translate(Math.cos(a) * 2.6, 0.1 - len / 2, Math.sin(a) * 2.6);
+    tGeos.push(g);
   }
+  const tGeo = mergeGeometries(tGeos)!;
+  const tBase = Float32Array.from(tGeo.attributes.position.array as Float32Array);
+  const tentacles = new THREE.Mesh(tGeo, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.6, toneMapped: false }));
+  root.add(tentacles);
   selectable(root, { type: 'Leuchtqualle', key: 'jellyfish', category: 'Kurioses', source: 'prozedural', model: 'createJellyfish' });
   root.userData.noCull = true;
   const ph = Math.random() * 10;
@@ -261,17 +262,14 @@ export function createJellyfish(hue = 0.85): THREE.Object3D {
     bell.scale.set(1 + pulse * 0.08, 1 - pulse * 0.12, 1 + pulse * 0.08);
     bellMat.emissiveIntensity = 0.2 + env.night * (1.2 + pulse * 0.4);
     root.position.set(home.x + Math.sin(t * 0.07 + ph) * 18, home.y - 0.6 + pulse * 0.25, home.z + Math.cos(t * 0.05 + ph) * 12);
-    for (const m of tentacles) {
-      const base = m.userData.base as Float32Array;
-      const pos = m.geometry.attributes.position as THREE.BufferAttribute;
-      const arr = pos.array as Float32Array;
-      for (let i = 0; i < pos.count; i++) {
-        const y = base[i * 3 + 1];
-        arr[i * 3] = base[i * 3] + Math.sin(t * 2 + y * 0.8 + m.position.x) * y * -0.08;
-        arr[i * 3 + 2] = base[i * 3 + 2] + Math.cos(t * 1.7 + y * 0.6 + m.position.z) * y * -0.06;
-      }
-      pos.needsUpdate = true;
+    const pos = tGeo.attributes.position as THREE.BufferAttribute;
+    const arr = pos.array as Float32Array;
+    for (let i = 0; i < pos.count; i++) {
+      const x = tBase[i * 3], y = tBase[i * 3 + 1], z = tBase[i * 3 + 2];
+      arr[i * 3] = x + Math.sin(t * 2 + y * 0.8 + z) * y * -0.08;
+      arr[i * 3 + 2] = z + Math.cos(t * 1.7 + y * 0.6 + x) * y * -0.06;
     }
+    pos.needsUpdate = true;
   });
   return root;
 }

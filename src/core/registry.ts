@@ -68,3 +68,18 @@ export function findInnerSelectable(o: THREE.Object3D | null): THREE.Object3D | 
   }
   return null;
 }
+
+const _b = new THREE.Box3();
+/** Bounding box of the VISIBLE meshes of an object (ignores hidden light cones etc.). */
+export function visibleBox(obj: THREE.Object3D, target = new THREE.Box3()): THREE.Box3 {
+  target.makeEmpty();
+  obj.updateWorldMatrix(true, true);
+  obj.traverseVisible((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || m.userData.noHighlight) return;
+    if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+    target.union(_b.copy(m.geometry.boundingBox!).applyMatrix4(m.matrixWorld));
+  });
+  if (target.isEmpty()) target.setFromObject(obj);
+  return target;
+}

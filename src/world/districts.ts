@@ -128,7 +128,7 @@ export function forest(scene: THREE.Object3D) {
   const x0 = HALF + 14, x1 = HALF + 190;
   const camp = { x: HALF + 70, z: 10, r: 20 };
   const lake = { x: HALF + 110, z: -60, r: 22 };
-  scatterTrees(scene, 11, 150, { x0, x1, z0: -150, z1: SEA_Z - 14 }, ['tree_pineTallA', 'tree_pineTallB', 'tree_pineRoundA', 'tree_pineRoundC', 'tree_cone', 'tree_oak_dark', 'tree_default', 'tree_detailed'], 8, 15,
+  scatterTrees(scene, 11, 110, { x0, x1, z0: -150, z1: SEA_Z - 14 }, ['tree_pineTallA', 'tree_pineTallB', 'tree_pineRoundA', 'tree_pineRoundC', 'tree_cone', 'tree_oak_dark', 'tree_default', 'tree_detailed'], 8, 15,
     (x, z) => Math.hypot(x - camp.x, z - camp.z) < camp.r || Math.hypot(x - lake.x, z - lake.z) < lake.r + 4);
   // camping
   place(scene, nature('tent_detailedOpen', 1.2), camp.x - 7, camp.z - 4, 0.6);
