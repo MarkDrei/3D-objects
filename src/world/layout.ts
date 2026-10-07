@@ -33,3 +33,6 @@ export function edgeExists(i: number, j: number, i2: number, j2: number) {
 
 export const PARK_HALF = P - ROAD / 2; // 49: park spans [-49, 49]
 export const SEA_Z = HALF + 34; // where the water starts in the south
+
+/** Junctions with traffic lights: all inner nodes (the boundary T-junctions are yield-only). */
+export const hasLights = (i: number, j: number) => i >= 1 && i <= N - 1 && j >= 1 && j <= N - 1 && nodeExists(i, j);

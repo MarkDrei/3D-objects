@@ -39,6 +39,7 @@ export class Stage {
   private pixelRatio: number;
   private frameTimes: number[] = [];
   elapsed = 0;
+  private frameNo = 0;
 
   constructor(container: HTMLElement, private opts: StageOptions) {
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
@@ -47,6 +48,7 @@ export class Stage {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.shadowMap.autoUpdate = false;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     container.appendChild(this.renderer.domElement);
@@ -216,6 +218,8 @@ export class Stage {
 
     this.bloom.enabled = env.night > 0.15;
     this.bloom.strength = 0.9 * env.night;
+    // shadows only every 2nd frame: halves the shadow draw calls, moving shadows still look smooth
+    if ((this.frameNo++ & 1) === 0) this.renderer.shadowMap.needsUpdate = true;
     this.composer.render(dt);
     this.onFrame();
     this.adaptQuality(dt);

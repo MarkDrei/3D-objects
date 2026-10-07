@@ -1,11 +1,22 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
  * GLTF models (Kenney, CC0). All models are preloaded once, then cloned
  * synchronously while building the world. Paths are relative to /models/.
  */
 const cache = new Map<string, THREE.Object3D>();
+
+/** The Kenney nature kit is very turquoise; nudge it towards the city palette. */
+const RECOLOR: Record<string, string> = {
+  leafsGreen: '#58a83c',
+  leafsDark: '#2f7d3c',
+  grass: '#62b043',
+  stone: '#b4b8bd',
+  stoneDark: '#8c9198',
+};
+const recolored = new Map<string, THREE.Material>();
 const BASE = `${import.meta.env.BASE_URL}models/`;
 
 export async function preloadModels(paths: string[], onProgress?: (done: number, total: number) => void) {
@@ -21,8 +32,20 @@ export async function preloadModels(paths: string[], onProgress?: (done: number,
           if (m.isMesh) {
             m.castShadow = true;
             m.receiveShadow = true;
-            const mats = Array.isArray(m.material) ? m.material : [m.material];
-            for (const mat of mats) {
+            if (p.startsWith('nature/')) {
+              const swap = (mat: THREE.Material) => {
+                const hex = RECOLOR[mat.name];
+                if (!hex) return mat;
+                if (!recolored.has(mat.name)) {
+                  const c = (mat as THREE.MeshStandardMaterial).clone();
+                  c.color.set(hex);
+                  recolored.set(mat.name, c);
+                }
+                return recolored.get(mat.name)!;
+              };
+              m.material = Array.isArray(m.material) ? m.material.map(swap) : swap(m.material);
+            }
+            for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
               const sm = mat as THREE.MeshStandardMaterial;
               if (sm.map) sm.map.anisotropy = 4;
               if ('metalness' in sm) sm.metalness = Math.min(sm.metalness, 0.2);
@@ -63,4 +86,36 @@ export function fitModel(obj: THREE.Object3D, opts: { size?: number; height?: nu
   const g = new THREE.Group();
   g.add(obj);
   return g;
+}
+
+/**
+ * Bake many copies of a model into one mesh per material (for crops, hedges …).
+ * Returns a Group positioned at the origin; transforms are in the group's space.
+ */
+export function mergeInstances(path: string, transforms: THREE.Matrix4[]): THREE.Group {
+  const src = cache.get(path);
+  if (!src) throw new Error(`Model not preloaded: ${path}`);
+  src.updateMatrixWorld(true);
+  const byMat = new Map<THREE.Material, THREE.BufferGeometry[]>();
+  src.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || Array.isArray(m.material)) return;
+    for (const t of transforms) {
+      const g = m.geometry.clone();
+      g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(t, m.matrixWorld));
+      if (!byMat.has(m.material)) byMat.set(m.material, []);
+      byMat.get(m.material)!.push(g);
+    }
+  });
+  const group = new THREE.Group();
+  for (const [mat, geos] of byMat) {
+    const merged = mergeGeometries(geos, false);
+    geos.forEach((g) => g.dispose());
+    if (!merged) continue;
+    const mesh = new THREE.Mesh(merged, mat);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  }
+  return group;
 }

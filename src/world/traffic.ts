@@ -3,7 +3,7 @@ import { model } from '../core/assets';
 import { onTick, env } from '../core/anim';
 import { Parts, rng } from '../core/parts';
 import { selectable, type ObjectMeta } from '../core/registry';
-import { LANE, N, P, ROAD, edgeExists, nodeExists, roadPos } from './layout';
+import { LANE, N, P, ROAD, edgeExists, nodeExists, roadPos, hasLights } from './layout';
 
 type Dir = [number, number];
 const DIRS: Dir[] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -190,7 +190,7 @@ export class Traffic {
     for (const c of cars) {
       let target = c.max;
       // traffic light
-      if (c.mode === 'straight' && nodeDegree(c.ti, c.tj) >= 3) {
+      if (c.mode === 'straight' && hasLights(c.ti, c.tj)) {
         const axis = c.dir[0] !== 0 ? 'x' : 'z';
         const st = lightState(c.ti, c.tj, axis, t);
         const stopAt = c.clen - STOP_BACK - c.len / 2;

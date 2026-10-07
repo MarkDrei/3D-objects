@@ -42,7 +42,7 @@ export class Environment {
     sky.renderOrder = -10;
     scene.add(sky);
 
-    scene.fog = new THREE.Fog(DAY.horizon.clone(), 260, 820);
+    scene.fog = new THREE.Fog(DAY.horizon.clone(), 320, 1250);
 
     this.hemi = new THREE.HemisphereLight(DAY.hemiSky, DAY.hemiGround, 1.3);
     scene.add(this.hemi);

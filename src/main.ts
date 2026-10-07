@@ -5,6 +5,7 @@ import { UI } from './core/ui';
 import { preloadModels } from './core/assets';
 import { env } from './core/anim';
 import { registry, infoOf } from './core/registry';
+import { setupDistanceCulling } from './core/culling';
 import { MODEL_FILES, buildWorld } from './world/world';
 import { GALLERY } from './objects/gallery';
 import './objects';
@@ -22,7 +23,10 @@ async function boot() {
 
   let moving = new Set<string>();
   if (view) moving = buildGallery(stage, view);
-  else moving = buildWorld(stage.scene);
+  else {
+    moving = buildWorld(stage.scene);
+    setupDistanceCulling(stage.camera);
+  }
 
   new UI(stage, moving);
 
@@ -39,7 +43,14 @@ async function boot() {
     const o = registry.find((r) => infoOf(r)!.id === sel || infoOf(r)!.key === sel);
     if (o) { stage.select(o); if (!cam) stage.focus(o); }
   }
+  // intro: swoop in from high above
+  if (!view && !cam && !sel && !params.get('nointro')) {
+    const home = stage.camera.position.clone();
+    stage.camera.position.set(-260, 330, 380);
+    stage.flyTo(home, stage.controls.target.clone(), 3.2);
+  }
   (window as any).__stage = stage;
+  (window as any).__count = registry.length;
   stage.start();
   document.getElementById('loader')!.classList.add('done');
   (window as any).__ready = true;
