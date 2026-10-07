@@ -6,9 +6,10 @@ import { GLTF_FILES } from './gltf';
 import { buildPark } from './park';
 import { buildCity } from './city';
 import { buildParkGrounds, buildPromenade, buildIsland } from './grounds';
+import { buildOutskirts, OUTSKIRT_MODELS } from './outskirts';
 import { forest, farmFields, cityTrees } from './districts';
 
-export const MODEL_FILES: string[] = [...CAR_MODELS.map((c) => c.file), ...GLTF_FILES];
+export const MODEL_FILES: string[] = [...CAR_MODELS.map((c) => c.file), ...GLTF_FILES, ...OUTSKIRT_MODELS];
 
 /** Build the whole city. Returns the type keys of objects that move (for "follow"). */
 export function buildWorld(scene: THREE.Scene): Set<string> {
@@ -23,8 +24,9 @@ export function buildWorld(scene: THREE.Scene): Set<string> {
   forest(scene);
   farmFields(scene);
   cityTrees(scene);
+  const out = buildOutskirts(scene, city.helipadTop);
 
   const traffic = new Traffic(scene);
   traffic.spawn(26);
-  return new Set([...traffic.movingKeys, ...city.movingKeys, 'monorail_train', 'swan_boat', 'duck']);
+  return new Set([...traffic.movingKeys, ...city.movingKeys, ...out, 'monorail_train', 'swan_boat', 'duck']);
 }

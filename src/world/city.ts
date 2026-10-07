@@ -174,5 +174,6 @@ export function buildCity(scene: THREE.Scene) {
     }
   }
   movingKeys.add('person');
-  return { movingKeys };
+  const helipadTop = new THREE.Vector3(pad.position.x, topOf(pad), pad.position.z);
+  return { movingKeys, helipadTop };
 }

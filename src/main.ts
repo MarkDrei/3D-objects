@@ -31,6 +31,7 @@ async function boot() {
   new UI(stage, moving);
 
   // URL helpers for screenshots / debugging
+  if (params.get('t')) stage.elapsed = Number(params.get('t'));
   if (params.get('night')) { stage.env.target = 1; env.night = 1; }
   const cam = params.get('cam');
   if (cam) {

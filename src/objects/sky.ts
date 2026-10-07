@@ -12,6 +12,8 @@ import {
 
 export * from './sky-air';
 export * from './sky-sea';
+export * from './sky-rocket';
+import { createRocketLaunchSite, createJellyfish } from './sky-rocket';
 
 function lift(o: THREE.Object3D, y: number) {
   const g = new THREE.Group();
@@ -43,4 +45,6 @@ gallery({
   whale: () => createWhale(),
   buoy: () => lift(createBuoy(), 1.2),
   pier: () => lift(createPier(40), 2),
+  rocketLaunchSite: () => withExtras(createRocketLaunchSite()),
+  jellyfish: () => lift(createJellyfish(), 1),
 });
