@@ -32,6 +32,7 @@ await withBrowser(async (browser) => {
   await page.waitForTimeout(400);
   const n = await page.evaluate(() => document.querySelectorAll('.cat-item').length);
   console.log(`catalog entries: ${n}, total: ${await page.textContent('#catalog-total')}`);
+  await page.screenshot({ path: '.shots/catalog.png' });
   const btn = page.locator('.cat-item', { hasText: 'ferris_wheel' });
   await btn.tap();
   await page.waitForFunction(() => !window.__stage.fly, null, { timeout: 90_000 });
