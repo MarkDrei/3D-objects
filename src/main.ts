@@ -42,7 +42,8 @@ async function boot() {
   const sel = params.get('select');
   if (sel) {
     const o = registry.find((r) => infoOf(r)!.id === sel || infoOf(r)!.key === sel);
-    if (o) { stage.select(o); if (!cam) stage.focus(o); }
+    // after the first frames, so moving objects are already at their real position
+    if (o) setTimeout(() => { stage.select(o); if (!cam) stage.focus(o); }, 400);
   }
   // intro: swoop in from high above
   if (!view && !cam && !sel && !params.get('nointro')) {
