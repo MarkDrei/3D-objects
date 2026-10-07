@@ -433,7 +433,7 @@ export function createCloud(seed = 1): THREE.Object3D {
  * (±4 m in height). Self-animating; 3 instanced draw calls for the whole flock.
  */
 export function createBirdFlock(count = 14): THREE.Object3D {
-  const S = 1.7;
+  const S = 0.9;
   const body = new Parts();
   body.sphere(0.22, '#f7f7f7', { sz: 2.4, w: 8, hseg: 6 });
   body.sphere(0.16, '#f7f7f7', { y: 0.08, z: 0.5, w: 8, hseg: 6 });
