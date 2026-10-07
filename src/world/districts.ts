@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Parts, rng, pick } from '../core/parts';
+import { onTick } from '../core/anim';
 import { selectable } from '../core/registry';
 import { BLOCK, SIDEWALK, blockPos, HALF, SEA_Z } from './layout';
 import { mergeInstances } from '../core/assets';
@@ -125,7 +126,7 @@ export function scatterTrees(scene: THREE.Object3D, seed: number, n: number, are
 }
 
 export function forest(scene: THREE.Object3D) {
-  const x0 = HALF + 14, x1 = HALF + 190;
+  const x0 = HALF + 14, x1 = HALF + 140;
   const camp = { x: HALF + 70, z: 10, r: 20 };
   const lake = { x: HALF + 110, z: -60, r: 22 };
   scatterTrees(scene, 11, 110, { x0, x1, z0: -150, z1: SEA_Z - 14 }, ['tree_pineTallA', 'tree_pineTallB', 'tree_pineRoundA', 'tree_pineRoundC', 'tree_cone', 'tree_oak_dark', 'tree_default', 'tree_detailed'], 8, 15,
@@ -134,7 +135,17 @@ export function forest(scene: THREE.Object3D) {
   place(scene, nature('tent_detailedOpen', 1.2), camp.x - 7, camp.z - 4, 0.6);
   place(scene, nature('tent_smallClosed', 1.3), camp.x + 6, camp.z - 6, -0.5);
   place(scene, nature('tent_detailedOpen', 1.1), camp.x + 1, camp.z + 8, Math.PI + 0.3);
-  place(scene, nature('campfire_logs', 1.3), camp.x, camp.z, 0);
+  const fire = place(scene, nature('campfire_logs', 1.3), camp.x, camp.z, 0);
+  const fl = new Parts();
+  fl.cone(0.55, 1.6, '#ff8a1f', { y: 0.9, mat: 'neon', seg: 6 });
+  fl.cone(0.32, 1.1, '#ffe066', { y: 0.75, x: 0.1, mat: 'neon', seg: 5 });
+  fl.cone(0.25, 0.9, '#ff5a1f', { y: 0.6, x: -0.3, z: 0.2, mat: 'neon', seg: 5 });
+  const flames = fl.build({ castShadow: false });
+  fire.add(flames);
+  onTick((_dt, t) => {
+    flames.scale.set(1 + Math.sin(t * 17) * 0.08, 0.85 + Math.abs(Math.sin(t * 9.3) + Math.sin(t * 23.1)) * 0.18, 1 + Math.cos(t * 13) * 0.08);
+    flames.rotation.y = t * 1.5;
+  });
   place(scene, nature('log_stack'), camp.x - 10, camp.z + 6, 1.2);
   place(scene, nature('stump_round'), camp.x + 3, camp.z + 2.5, 0);
   place(scene, nature('stump_round'), camp.x - 3, camp.z - 2, 0);
