@@ -48,5 +48,14 @@ await withBrowser(async (browser) => {
   const dist = await page.evaluate(() => { const s = window.__stage; const V = s.camera.position.constructor; const p = new V(); s.highlighter.selected.getWorldPosition(p); return `${p.distanceTo(s.controls.target).toFixed(1)} (taxi ${p.toArray().map(Math.round)}, target ${s.controls.target.toArray().map(Math.round)}, following ${s.following?.userData.info.id}, sel ${s.highlighter.selected.userData.info.id})`; });
   console.log(`follow button visible: ${followVisible}, following: ${await page.evaluate(() => !!window.__stage.following)}, target↔taxi distance: ${dist} m`);
   await page.screenshot({ path: '.shots/interact.png' });
+  // day/night button + home button
+  await page.tap('#card-close');
+  await page.tap('#btn-night');
+  await page.waitForFunction(() => window.__stage.env.target === 1, null, { timeout: 5000 });
+  await page.tap('#btn-home');
+  await page.waitForFunction(() => !window.__stage.fly && document.querySelector('#btn-night').textContent.includes('☀'), null, { timeout: 90_000 });
+  await page.waitForTimeout(4000);
+  console.log('night after toggle:', await page.evaluate(() => window.__stage.env.target), 'following after close:', await page.evaluate(() => !!window.__stage.following));
+  await page.screenshot({ path: '.shots/interact-night.png' });
   if (logs.length) console.log(logs.join('\n'));
 }, { timeoutMs: 200_000 });

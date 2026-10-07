@@ -33,6 +33,32 @@ URL-Parameter (praktisch zum Testen):
 - `?view=all` – Galerie aller Objekt-Factories, `?view=ferrisWheel,ufo` – nur diese
 - `?select=ferris_wheel` bzw. `?select=car_003` – Objekt direkt auswählen
 - `?night=1` – Nachtmodus, `?cam=x,y,z,tx,ty,tz` – Kameraposition, `?nointro=1` – ohne Intro-Flug
+- `?t=46` – Animationszeit vorspulen (z. B. Raketenstart bei t≈46 s im 90-s-Zyklus)
+
+### Headless-Tests (Screenshots, Interaktion)
+
+```bash
+node scripts/shot.mjs "select=ferris_wheel&night=1" out.png 412 915 3000   # PROFILE=1 → Meshes pro Typ
+node scripts/interact.mjs house car tree                                   # Tippen, Katalog, Folgen, Tag/Nacht
+```
+
+Beide nutzen `scripts/browser.mjs`: **immer nur ein Browser gleichzeitig** (Lock-Datei), der Browser
+wird in `finally` immer geschlossen, ein Watchdog bricht hängende Läufe ab. Nie mehrere Läufe parallel starten.
+
+## Die Welt
+
+- **Downtown**: Wolkenkratzer mit Helipad (Hubschrauber startet & landet), Funkturm, 21-m-Riesenroboter,
+  Kino „POLYPLEX“, Riesenkatze auf dem Dach, Kaugummiautomat, Straßenmusiker
+- **Zentralpark**: Monorail rundherum, Riesenrad, Karussell, Riesenschach (34 Figuren), Brunnen,
+  Teich mit Riesen-Quietscheente & Schwanenbooten, T-Rex, Spielplatz, Fliegenpilzhaus, Musikpavillon
+- **Ost**: Donut-Laden, Pizzeria, Café, Tankstelle, Waschanlage, Feuerwache, Wasserturm, Skatepark
+- **Vorstadt**: Häuser (5 Dachfarben per Shader), Pools, Trampolin, Hecken, Gartenzäune
+- **Außen**: Bauernhof mit UFO (entführt eine Kuh), Windmühle, Traktor, Weide; Wald mit Camp & See;
+  Windpark, Radioteleskope, Raketenbasis (Start & Landung alle 90 s); Hafen mit Leuchtturm, Fähre,
+  Piratenschiff, Seeschlange, springendem Wal, Leuchtquallen, Drachen am Strand
+- **Himmel**: Zeppelin, Bannerflieger, Heißluftballons (u. a. Erdbeere & Smiley), Möwen, Wolken
+- **Verkehr**: Autos mit Ampellogik, Blaulicht, Scheinwerfern; Fußgänger, Jogger, Hunde
+- **Nacht**: Fenster leuchten zufällig, Laternen werfen Lichtkegel, Neon + Bloom, Sterne & Mond
 
 ## Architektur
 
